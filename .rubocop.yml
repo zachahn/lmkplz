@@ -1,0 +1,54 @@
+AllCops:
+  DisplayCopNames: true
+
+Bundler/OrderedGems:
+  Enabled: false
+
+Metrics/LineLength:
+  IgnoredPatterns:
+    - !ruby/regexp /^\s*#/
+
+Style/AlignParameters:
+  EnforcedStyle: with_fixed_indentation
+
+Style/AsciiComments:
+  Enabled: false
+
+Style/Documentation:
+  Enabled: false
+
+Style/EmptyMethod:
+  Enabled: false
+
+Style/ExtraSpacing:
+  AllowForAlignment: false
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+Style/GuardClause:
+  Enabled: false
+
+Style/IfUnlessModifier:
+  Enabled: false
+
+Style/MultilineMethodCallIndentation:
+  EnforcedStyle: indented_relative_to_receiver
+
+Style/NegatedIf:
+  Enabled: false
+
+Style/SpaceInLambdaLiteral:
+  EnforcedStyle: require_space
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+Style/StringLiteralsInInterpolation:
+  Enabled: false
+
+Style/TrailingCommaInArguments:
+  EnforcedStyleForMultiline: comma
+
+Style/TrailingCommaInLiteral:
+  EnforcedStyleForMultiline: comma

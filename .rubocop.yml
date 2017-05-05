@@ -4,9 +4,17 @@ AllCops:
 Bundler/OrderedGems:
   Enabled: false
 
+Metrics/AbcSize:
+  Exclude:
+    - test/**/*
+
 Metrics/LineLength:
   IgnoredPatterns:
     - !ruby/regexp /^\s*#/
+
+Metrics/MethodLength:
+  Exclude:
+    - test/**/*
 
 Style/AlignParameters:
   EnforcedStyle: with_fixed_indentation

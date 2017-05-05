@@ -4,3 +4,4 @@ version = "0.1.0"
 authors = ["Zach Ahn <engineering@zachahn.com>"]
 
 [dependencies]
+notify = "4.0.1"

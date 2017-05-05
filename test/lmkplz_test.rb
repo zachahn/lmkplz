@@ -1,6 +1,6 @@
 require "test_helper"
 
-class LmkplzTest < Minitest::Test
+class LmkplzTest < TestCase
   def test_that_it_has_a_version_number
     refute_nil ::Lmkplz::VERSION
   end

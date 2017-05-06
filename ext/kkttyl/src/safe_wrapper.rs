@@ -27,7 +27,10 @@ pub fn safe_add_cwatch(cwatch: &mut CWatch, abspath: &str) {
     cwatch.watcher.watch(abspath, RecursiveMode::Recursive).unwrap();
 }
 
-pub fn safe_watch_cwatch(cwatch: &mut CWatch, success_callback: &Fn(SuccessEvent, PathBuf), ended_callback: &Fn()) {
+pub fn safe_watch_cwatch(cwatch: &mut CWatch,
+                         success_callback: &Fn(SuccessEvent, PathBuf),
+                         failure_callback: &Fn(Option<PathBuf>),
+                         ended_callback: &Fn()) {
     loop {
         match cwatch.rx.recv() {
             Ok(event) => {
@@ -39,6 +42,7 @@ pub fn safe_watch_cwatch(cwatch: &mut CWatch, success_callback: &Fn(SuccessEvent
                         success_callback(SuccessEvent::Remove, sourcepath);
                         success_callback(SuccessEvent::Create, destpath)
                     },
+                    DebouncedEvent::Error(_, pathbuf) => failure_callback(pathbuf),
                     _ => {}
                 }
             },

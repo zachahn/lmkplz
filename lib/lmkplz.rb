@@ -1,5 +1,3 @@
-require "lmkplz/version"
+require "ffi"
 
-module Lmkplz
-  # Your code goes here...
-end
+require "lmkplz/middleman"

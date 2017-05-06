@@ -7,6 +7,7 @@ use libc::c_char;
 use std::time::Duration;
 use std::ffi::CStr;
 use std::ffi::CString;
+use std::path::PathBuf;
 use safe_wrapper::*;
 
 #[no_mangle]
@@ -23,6 +24,38 @@ pub extern "C" fn add_cwatch(cwatch: *mut CWatch, abspath: *const c_char) {
 
         safe_add_cwatch(&mut *cwatch, unsafe_abspath.to_str().unwrap());
     }
+}
+
+#[no_mangle]
+pub extern "C" fn watch_cwatch(cwatch: *mut CWatch, success: extern fn(*const c_char, *const c_char), ended: extern fn()) {
+    unsafe {
+        let wrapped_success_callback = success_callback_wrapper(success);
+        let wrapped_ended_callback = ended_callback_wrapper(ended);
+
+        safe_watch_cwatch(&mut *cwatch, &*wrapped_success_callback, &*wrapped_ended_callback)
+    }
+}
+
+fn success_callback_wrapper(callback: extern fn(*const c_char, *const c_char)) -> Box<Fn(SuccessEvent, PathBuf)> {
+    Box::new(
+        move |event, pathbuf| {
+            let status = match event {
+                SuccessEvent::Create => "create",
+                SuccessEvent::Write => "write",
+                SuccessEvent::Remove => "remove",
+            };
+            let path = pathbuf.to_str().unwrap();
+
+            let cstatus = CString::new(status).unwrap();
+            let cpath = CString::new(path).unwrap();
+
+            callback(cstatus.as_ptr(), cpath.as_ptr())
+        }
+    )
+}
+
+fn ended_callback_wrapper(callback: extern fn()) -> Box<Fn()> {
+    Box::new(move || callback())
 }
 
 #[cfg(test)]

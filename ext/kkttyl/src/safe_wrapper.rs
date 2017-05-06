@@ -1,10 +1,17 @@
 use notify::{RecommendedWatcher, Watcher, RecursiveMode, DebouncedEvent};
 use std::sync::mpsc::{channel, Receiver};
 use std::time::Duration;
+use std::path::PathBuf;
 
 pub struct CWatch {
     pub watcher: RecommendedWatcher,
     pub rx: Receiver<DebouncedEvent>
+}
+
+pub enum SuccessEvent {
+    Create,
+    Write,
+    Remove
 }
 
 pub fn safe_new_cwatch(debounce_duration: u64) -> Box<CWatch> {
@@ -18,6 +25,26 @@ pub fn safe_new_cwatch(debounce_duration: u64) -> Box<CWatch> {
 
 pub fn safe_add_cwatch(cwatch: &mut CWatch, abspath: &str) {
     cwatch.watcher.watch(abspath, RecursiveMode::Recursive).unwrap();
+}
+
+pub fn safe_watch_cwatch(cwatch: &mut CWatch, success_callback: &Fn(SuccessEvent, PathBuf), ended_callback: &Fn()) {
+    loop {
+        match cwatch.rx.recv() {
+            Ok(event) => {
+                match event {
+                    DebouncedEvent::Create(pathbuf) => success_callback(SuccessEvent::Create, pathbuf),
+                    DebouncedEvent::Write(pathbuf) => success_callback(SuccessEvent::Write, pathbuf),
+                    DebouncedEvent::Remove(pathbuf) => success_callback(SuccessEvent::Remove, pathbuf),
+                    DebouncedEvent::Rename(sourcepath, destpath) => {
+                        success_callback(SuccessEvent::Remove, sourcepath);
+                        success_callback(SuccessEvent::Create, destpath)
+                    },
+                    _ => {}
+                }
+            },
+            Err(_) => ended_callback()
+        }
+    }
 }
 
 #[cfg(test)]

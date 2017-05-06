@@ -4,7 +4,6 @@ extern crate libc;
 mod safe_wrapper;
 
 use libc::c_char;
-use std::time::Duration;
 use std::ffi::CStr;
 use std::ffi::CString;
 use std::path::PathBuf;
@@ -85,6 +84,7 @@ mod tests {
     use self::tempdir::TempDir;
     use std::thread::{sleep};
     use std::fs::File;
+    use std::time::Duration;
     use std::io::prelude::*;
 
     #[test]

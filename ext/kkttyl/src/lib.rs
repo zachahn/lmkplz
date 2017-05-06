@@ -17,11 +17,11 @@ pub extern "C" fn new_cwatch(debounce_duration: u64) -> *mut CWatch {
 }
 
 #[no_mangle]
-pub extern "C" fn watch_cwatch(cwatch: *mut CWatch, abspath: *const c_char) {
+pub extern "C" fn add_cwatch(cwatch: *mut CWatch, abspath: *const c_char) {
     unsafe {
         let unsafe_abspath = CStr::from_ptr(abspath);
 
-        safe_watch_cwatch(&mut *cwatch, unsafe_abspath.to_str().unwrap());
+        safe_add_cwatch(&mut *cwatch, unsafe_abspath.to_str().unwrap());
     }
 }
 
@@ -43,7 +43,7 @@ mod tests {
 
         let cwatch = new_cwatch(1);
         let path_to_watch = td.path().to_str().expect("can't get tempdir path");
-        watch_cwatch(cwatch, CString::new(path_to_watch).unwrap().as_ptr());
+        add_cwatch(cwatch, CString::new(path_to_watch).unwrap().as_ptr());
 
         sleep(Duration::from_millis(100));
 

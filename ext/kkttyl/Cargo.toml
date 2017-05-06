@@ -9,6 +9,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 notify = "4.0.1"
+libc = "0.2.22"
 
 [dev-dependencies]
 tempdir = "^0.3.5"

@@ -4,8 +4,7 @@ extern crate libc;
 mod safe_wrapper;
 
 use libc::c_char;
-use std::ffi::CStr;
-use std::ffi::CString;
+use std::ffi::{CStr, CString};
 use std::path::PathBuf;
 use safe_wrapper::*;
 
@@ -30,11 +29,11 @@ pub extern "C" fn watch_cwatch(cwatch: *mut CWatch,
                                success: extern fn(*const c_char, *const c_char),
                                failure: extern fn(*const c_char),
                                ended: extern fn()) {
-    unsafe {
-        let wrapped_success_callback = success_callback_wrapper(success);
-        let wrapped_failure_callback = failure_callback_wrapper(failure);
-        let wrapped_ended_callback = ended_callback_wrapper(ended);
+    let wrapped_success_callback = success_callback_wrapper(success);
+    let wrapped_failure_callback = failure_callback_wrapper(failure);
+    let wrapped_ended_callback = ended_callback_wrapper(ended);
 
+    unsafe {
         safe_watch_cwatch(&mut *cwatch, &*wrapped_success_callback, &*wrapped_failure_callback, &*wrapped_ended_callback)
     }
 }

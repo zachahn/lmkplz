@@ -26,52 +26,52 @@ pub extern "C" fn add_cwatch(cwatch: *mut CWatch, abspath: *const c_char) {
 
 #[no_mangle]
 pub extern "C" fn watch_cwatch(cwatch: *mut CWatch,
-                               success: extern fn(*const c_char, *const c_char),
-                               failure: extern fn(*const c_char),
-                               ended: extern fn()) {
+                               success: extern "C" fn(*const c_char, *const c_char),
+                               failure: extern "C" fn(*const c_char),
+                               ended: extern "C" fn()) {
     let wrapped_success_callback = success_callback_wrapper(success);
     let wrapped_failure_callback = failure_callback_wrapper(failure);
     let wrapped_ended_callback = ended_callback_wrapper(ended);
 
     unsafe {
-        safe_watch_cwatch(&mut *cwatch, &*wrapped_success_callback, &*wrapped_failure_callback, &*wrapped_ended_callback)
+        safe_watch_cwatch(&mut *cwatch,
+                          &*wrapped_success_callback,
+                          &*wrapped_failure_callback,
+                          &*wrapped_ended_callback)
     }
 }
 
-fn success_callback_wrapper(callback: extern fn(*const c_char, *const c_char)) -> Box<Fn(SuccessEvent, PathBuf)> {
-    Box::new(
-        move |event, pathbuf| {
-            let status = match event {
-                SuccessEvent::Create => "create",
-                SuccessEvent::Write => "write",
-                SuccessEvent::Remove => "remove",
-            };
-            let path = pathbuf.to_str().unwrap();
+fn success_callback_wrapper(callback: extern "C" fn(*const c_char, *const c_char))
+                            -> Box<Fn(SuccessEvent, PathBuf)> {
+    Box::new(move |event, pathbuf| {
+        let status = match event {
+            SuccessEvent::Create => "create",
+            SuccessEvent::Write => "write",
+            SuccessEvent::Remove => "remove",
+        };
+        let path = pathbuf.to_str().unwrap();
 
-            let cstatus = CString::new(status).unwrap();
-            let cpath = CString::new(path).unwrap();
+        let cstatus = CString::new(status).unwrap();
+        let cpath = CString::new(path).unwrap();
 
-            callback(cstatus.as_ptr(), cpath.as_ptr())
-        }
-    )
+        callback(cstatus.as_ptr(), cpath.as_ptr())
+    })
 }
 
-fn failure_callback_wrapper(callback: extern fn(*const c_char)) -> Box<Fn(Option<PathBuf>)> {
-    Box::new(
-        move |o_pathbuf| {
-            let path = match o_pathbuf {
-                Some(pathbuf) => pathbuf,
-                None => PathBuf::from("")
-            };
+fn failure_callback_wrapper(callback: extern "C" fn(*const c_char)) -> Box<Fn(Option<PathBuf>)> {
+    Box::new(move |o_pathbuf| {
+        let path = match o_pathbuf {
+            Some(pathbuf) => pathbuf,
+            None => PathBuf::from(""),
+        };
 
-            let cpath = CString::new(path.to_str().unwrap()).unwrap();
+        let cpath = CString::new(path.to_str().unwrap()).unwrap();
 
-            callback(cpath.as_ptr())
-        }
-    )
+        callback(cpath.as_ptr())
+    })
 }
 
-fn ended_callback_wrapper(callback: extern fn()) -> Box<Fn()> {
+fn ended_callback_wrapper(callback: extern "C" fn()) -> Box<Fn()> {
     Box::new(move || callback())
 }
 
@@ -81,7 +81,7 @@ mod tests {
 
     use super::*;
     use self::tempdir::TempDir;
-    use std::thread::{sleep};
+    use std::thread::sleep;
     use std::fs::File;
     use std::time::Duration;
     use std::io::prelude::*;
@@ -100,7 +100,8 @@ mod tests {
 
         let file_path = td.path().join("testing.txt");
         let mut f = File::create(file_path).expect("couldn't create file");
-        f.write_all(b"Hello, world!").expect("couldn't write to file");
+        f.write_all(b"Hello, world!")
+            .expect("couldn't write to file");
         f.sync_all().expect("couldn't sync file");
 
         unsafe { (*cwatch).rx.recv().expect("didn't get file") };

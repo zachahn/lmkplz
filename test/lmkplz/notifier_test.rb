@@ -12,19 +12,10 @@ class NotifierTest < TestCase
         puts 1
 
         notifier = Lmkplz::Notifier.new(dir)
-
         notifier.on_write(&callback)
         notifier.on_create(&callback)
         notifier.on_remove(&callback)
-
-        puts 2
-
         notifier.start
-
-        puts 3
-
-        new_file_path = File.join(dir, "test.txt")
-        File.write(new_file_path, "test!")
 
         puts 4
 
@@ -36,6 +27,12 @@ class NotifierTest < TestCase
 
         puts 6
 
+        new_file_path = File.join(dir, "test.txt")
+        File.write(new_file_path, "test!")
+
+        puts 8
+
+        notifier.callbacker.join
         waiter.join
         notifier.watcher_thread
 

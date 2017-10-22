@@ -9,6 +9,25 @@ module Lmkplz
       @callbacks = {}
 
       @mutex = Mutex.new
+      @files = Queue.new
+
+      @callbacker = Thread.new do
+        loop do
+          type, file = @files.pop
+
+          @mutex.synchronize do
+            callback = @callbacks[type]
+
+            if callback
+              callback.call(path)
+            end
+          end
+        end
+      end
+    end
+
+    def callbacker
+      @callbacker
     end
 
     def on_create(&block)
@@ -58,14 +77,7 @@ module Lmkplz
 
     def middleman_callback(type, path)
       @mutex.synchronize do
-        callback = @callbacks[type]
-
-        puts callback
-        puts path
-
-        if callback
-          callback.call(path)
-        end
+        @queue.push([type, path])
       end
     end
   end

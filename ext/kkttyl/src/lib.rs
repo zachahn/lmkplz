@@ -8,6 +8,7 @@ use std::ffi::{CStr, CString};
 use std::path::PathBuf;
 use safe_wrapper::*;
 
+/// Create a new instance of the watcher
 #[no_mangle]
 pub extern "C" fn new_cwatch(debounce_duration: u64) -> *mut CWatch {
     let boxed_cwatch = safe_new_cwatch(debounce_duration);
@@ -15,6 +16,7 @@ pub extern "C" fn new_cwatch(debounce_duration: u64) -> *mut CWatch {
     Box::into_raw(boxed_cwatch)
 }
 
+/// Add a path to watch
 #[no_mangle]
 pub extern "C" fn add_cwatch(cwatch: *mut CWatch, abspath: *const c_char) {
     unsafe {
@@ -24,6 +26,7 @@ pub extern "C" fn add_cwatch(cwatch: *mut CWatch, abspath: *const c_char) {
     }
 }
 
+/// Start watching
 #[no_mangle]
 pub extern "C" fn watch_cwatch(cwatch: *mut CWatch,
                                success: extern "C" fn(*const c_char, *const c_char),

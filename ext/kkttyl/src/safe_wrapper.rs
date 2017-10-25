@@ -14,7 +14,7 @@ pub enum SuccessEvent {
     Remove,
 }
 
-pub fn safe_new_cwatch(debounce_duration: u64) -> Box<CWatch> {
+pub fn safe_cwatch_new(debounce_duration: u64) -> Box<CWatch> {
     let (transmission, receiving) = channel();
     let watcher: RecommendedWatcher =
         Watcher::new(transmission, Duration::from_secs(debounce_duration)).unwrap();
@@ -27,14 +27,14 @@ pub fn safe_new_cwatch(debounce_duration: u64) -> Box<CWatch> {
     Box::new(ws)
 }
 
-pub fn safe_add_cwatch(cwatch: &mut CWatch, abspath: &str) {
+pub fn safe_cwatch_add(cwatch: &mut CWatch, abspath: &str) {
     cwatch
         .watcher
         .watch(abspath, RecursiveMode::Recursive)
         .unwrap();
 }
 
-pub fn safe_watch_cwatch(cwatch: &mut CWatch,
+pub fn safe_cwatch_await(cwatch: &mut CWatch,
                          success_callback: &Fn(SuccessEvent, PathBuf),
                          failure_callback: &Fn(Option<PathBuf>),
                          ended_callback: &Fn()) {
@@ -80,8 +80,8 @@ mod tests {
 
         sleep(Duration::from_millis(10));
 
-        let mut cwatch = safe_new_cwatch(1);
-        safe_add_cwatch(&mut cwatch,
+        let mut cwatch = safe_cwatch_new(1);
+        safe_cwatch_add(&mut cwatch,
                         td.path().to_str().expect("can't get tempdir path"));
 
         sleep(Duration::from_millis(100));

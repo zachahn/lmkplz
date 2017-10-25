@@ -10,25 +10,25 @@ use safe_wrapper::*;
 
 /// Create a new instance of the watcher
 #[no_mangle]
-pub extern "C" fn new_cwatch(debounce_duration: u64) -> *mut CWatch {
-    let boxed_cwatch = safe_new_cwatch(debounce_duration);
+pub extern "C" fn cwatch_new(debounce_duration: u64) -> *mut CWatch {
+    let boxed_cwatch = safe_cwatch_new(debounce_duration);
 
     Box::into_raw(boxed_cwatch)
 }
 
 /// Add a path to watch
 #[no_mangle]
-pub extern "C" fn add_cwatch(cwatch: *mut CWatch, abspath: *const c_char) {
+pub extern "C" fn cwatch_add(cwatch: *mut CWatch, abspath: *const c_char) {
     unsafe {
         let unsafe_abspath = CStr::from_ptr(abspath);
 
-        safe_add_cwatch(&mut *cwatch, unsafe_abspath.to_str().unwrap());
+        safe_cwatch_add(&mut *cwatch, unsafe_abspath.to_str().unwrap());
     }
 }
 
 /// Start watching
 #[no_mangle]
-pub extern "C" fn watch_cwatch(cwatch: *mut CWatch,
+pub extern "C" fn cwatch_await(cwatch: *mut CWatch,
                                success: extern "C" fn(*const c_char, *const c_char),
                                failure: extern "C" fn(*const c_char),
                                ended: extern "C" fn()) {
@@ -37,7 +37,7 @@ pub extern "C" fn watch_cwatch(cwatch: *mut CWatch,
     let wrapped_ended_callback = ended_callback_wrapper(ended);
 
     unsafe {
-        safe_watch_cwatch(&mut *cwatch,
+        safe_cwatch_await(&mut *cwatch,
                           &*wrapped_success_callback,
                           &*wrapped_failure_callback,
                           &*wrapped_ended_callback)
@@ -95,9 +95,9 @@ mod tests {
 
         sleep(Duration::from_millis(10));
 
-        let cwatch = new_cwatch(1);
+        let cwatch = cwatch_new(1);
         let path_to_watch = td.path().to_str().expect("can't get tempdir path");
-        add_cwatch(cwatch, CString::new(path_to_watch).unwrap().as_ptr());
+        cwatch_add(cwatch, CString::new(path_to_watch).unwrap().as_ptr());
 
         sleep(Duration::from_millis(100));
 

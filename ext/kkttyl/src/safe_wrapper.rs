@@ -38,29 +38,29 @@ pub fn safe_cwatch_await(cwatch: &mut CWatch,
                          success_callback: &Fn(SuccessEvent, PathBuf),
                          failure_callback: &Fn(Option<PathBuf>),
                          ended_callback: &Fn()) {
-    loop {
-        match cwatch.rx.recv() {
-            Ok(event) => {
-                match event {
-                    DebouncedEvent::Create(pathbuf) => {
-                        success_callback(SuccessEvent::Create, pathbuf)
-                    }
-                    DebouncedEvent::Write(pathbuf) => {
-                        success_callback(SuccessEvent::Write, pathbuf)
-                    }
-                    DebouncedEvent::Remove(pathbuf) => {
-                        success_callback(SuccessEvent::Remove, pathbuf)
-                    }
-                    DebouncedEvent::Rename(sourcepath, destpath) => {
-                        success_callback(SuccessEvent::Remove, sourcepath);
-                        success_callback(SuccessEvent::Create, destpath)
-                    }
-                    DebouncedEvent::Error(_, pathbuf) => failure_callback(pathbuf),
-                    _ => {}
+    match cwatch.rx.recv() {
+        Ok(notify_event) => {
+            match notify_event {
+                DebouncedEvent::Create(pathbuf) => {
+                    success_callback(SuccessEvent::Create, pathbuf)
                 }
-            }
-            Err(_) => ended_callback(),
+                DebouncedEvent::Write(pathbuf) => {
+                    success_callback(SuccessEvent::Write, pathbuf)
+                }
+                DebouncedEvent::Remove(pathbuf) => {
+                    success_callback(SuccessEvent::Remove, pathbuf)
+                }
+                DebouncedEvent::Rename(sourcepath, destpath) => {
+                    success_callback(SuccessEvent::Remove, sourcepath);
+                    success_callback(SuccessEvent::Create, destpath)
+                }
+                DebouncedEvent::Error(_, pathbuf) => {
+                    failure_callback(pathbuf)
+                }
+                _ => {}
+            };
         }
+        Err(_) => ended_callback()
     }
 }
 

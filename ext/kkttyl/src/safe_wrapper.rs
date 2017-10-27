@@ -92,6 +92,17 @@ mod tests {
             .expect("couldn't write to file");
         f.sync_all().expect("couldn't sync file");
 
-        cwatch.rx.recv().expect("didn't get file");
+        let test_success_cb = Box::new(move |_: SuccessEvent, _: PathBuf| {
+        });
+
+        let test_failure_cb = Box::new(move |_: Option<PathBuf>| {
+        });
+
+        let test_ended_cb = Box::new(move || {
+        });
+
+        safe_cwatch_await(&mut cwatch, &*test_success_cb, &*test_failure_cb, &*test_ended_cb);
+
+        // cwatch.rx.recv().expect("didn't get file");
     }
 }

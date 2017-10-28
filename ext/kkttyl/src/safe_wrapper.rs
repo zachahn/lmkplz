@@ -8,12 +8,6 @@ pub struct CWatch {
     pub rx: Receiver<DebouncedEvent>,
 }
 
-pub enum SuccessEvent {
-    Create,
-    Write,
-    Remove,
-}
-
 pub fn safe_cwatch_new(debounce_duration: u64) -> Box<CWatch> {
     let (transmission, receiving) = channel();
     let watcher: RecommendedWatcher =
@@ -35,24 +29,23 @@ pub fn safe_cwatch_add(cwatch: &mut CWatch, abspath: &str) {
 }
 
 pub fn safe_cwatch_await(cwatch: &mut CWatch,
-                         success_callback: &Fn(SuccessEvent, PathBuf),
+                         success_callback: &Fn(PathBuf, PathBuf, PathBuf),
                          failure_callback: &Fn(Option<PathBuf>),
                          ended_callback: &Fn()) {
     match cwatch.rx.recv() {
         Ok(notify_event) => {
             match notify_event {
                 DebouncedEvent::Create(pathbuf) => {
-                    success_callback(SuccessEvent::Create, pathbuf)
+                    success_callback(PathBuf::new(), pathbuf, PathBuf::new())
                 }
                 DebouncedEvent::Write(pathbuf) => {
-                    success_callback(SuccessEvent::Write, pathbuf)
+                    success_callback(pathbuf, PathBuf::new(), PathBuf::new())
                 }
                 DebouncedEvent::Remove(pathbuf) => {
-                    success_callback(SuccessEvent::Remove, pathbuf)
+                    success_callback(PathBuf::new(), PathBuf::new(), pathbuf)
                 }
                 DebouncedEvent::Rename(sourcepath, destpath) => {
-                    success_callback(SuccessEvent::Remove, sourcepath);
-                    success_callback(SuccessEvent::Create, destpath)
+                    success_callback(PathBuf::new(), destpath, sourcepath)
                 }
                 DebouncedEvent::Error(_, pathbuf) => {
                     failure_callback(pathbuf)
@@ -92,7 +85,7 @@ mod tests {
             .expect("couldn't write to file");
         f.sync_all().expect("couldn't sync file");
 
-        let test_success_cb = Box::new(move |_: SuccessEvent, _: PathBuf| {
+        let test_success_cb = Box::new(move |_m: PathBuf, _a: PathBuf, _r: PathBuf| {
         });
 
         let test_failure_cb = Box::new(move |_: Option<PathBuf>| {

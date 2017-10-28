@@ -29,7 +29,7 @@ pub extern "C" fn cwatch_add(cwatch: *mut CWatch, abspath: *const c_char) {
 /// Start watching
 #[no_mangle]
 pub extern "C" fn cwatch_await(cwatch: *mut CWatch,
-                               success: extern "C" fn(*const c_char, *const c_char),
+                               success: extern "C" fn(*const c_char, *const c_char, *const c_char),
                                failure: extern "C" fn(*const c_char),
                                ended: extern "C" fn()) {
     let wrapped_success_callback = success_callback_wrapper(success);
@@ -44,20 +44,18 @@ pub extern "C" fn cwatch_await(cwatch: *mut CWatch,
     }
 }
 
-fn success_callback_wrapper(callback: extern "C" fn(*const c_char, *const c_char))
-                            -> Box<Fn(SuccessEvent, PathBuf)> {
-    Box::new(move |event, pathbuf| {
-        let status = match event {
-            SuccessEvent::Create => "create",
-            SuccessEvent::Write => "write",
-            SuccessEvent::Remove => "remove",
-        };
-        let path = pathbuf.to_str().unwrap();
+fn success_callback_wrapper(callback: extern "C" fn(*const c_char, *const c_char, *const c_char))
+                            -> Box<Fn(PathBuf, PathBuf, PathBuf)> {
+    Box::new(move |modified_pathbuf, added_pathbuf, removed_pathbuf| {
+        let modified_path = modified_pathbuf.to_str().unwrap();
+        let added_path = added_pathbuf.to_str().unwrap();
+        let removed_path = removed_pathbuf.to_str().unwrap();
 
-        let cstatus = CString::new(status).unwrap();
-        let cpath = CString::new(path).unwrap();
+        let modified_cstr = CString::new(modified_path).unwrap();
+        let added_cstr = CString::new(added_path).unwrap();
+        let removed_cstr = CString::new(removed_path).unwrap();
 
-        callback(cstatus.as_ptr(), cpath.as_ptr())
+        callback(modified_cstr.as_ptr(), added_cstr.as_ptr(), removed_cstr.as_ptr());
     })
 }
 

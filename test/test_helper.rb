@@ -3,6 +3,7 @@ require "lmkplz"
 
 require "tmpdir"
 require "minitest/autorun"
+require "pry-byebug"
 
 class TestCase < Minitest::Test
 end

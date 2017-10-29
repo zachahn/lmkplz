@@ -2,6 +2,7 @@ module Lmkplz
   module Kkttyl
     def self.path
       if $USE_DEBUG
+        $stderr.puts "Using debug build"
         debug_path
       else
         release_path
@@ -23,12 +24,20 @@ module Lmkplz
     ffi_lib Kkttyl.path
 
     callback :success_callback, %i[string string string], :void
-    callback :failure_callback, %i[string], :void
-    callback :end_callback, [], :void
+    callback :failure_callback, %i[], :void
+    callback :timeout_callback, %i[], :void
+    callback :end_callback, %i[], :void
 
     attach_function :cwatch_new, %i[uint64], :pointer
     attach_function :cwatch_add, %i[pointer string], :void
     attach_function :cwatch_await, \
-      %i[pointer success_callback failure_callback end_callback], :pointer
+      %i[
+        pointer
+        uint64
+        success_callback
+        failure_callback
+        timeout_callback
+        end_callback
+      ], :void
   end
 end

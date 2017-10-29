@@ -6,7 +6,7 @@ class InterfaceTest < TestCase
       File.write(File.join(dir, "ensure_file_and_folder_created.txt"), "\n")
       sleep(0.01)
       queue = Queue.new
-      interface = Lmkplz::Interface.new
+      interface = Lmkplz::Interface.new(200)
       interface.add(dir)
       interface.on_success { |m, a, r| queue.push([m, a, r]) }
 
@@ -14,8 +14,11 @@ class InterfaceTest < TestCase
 
       new_file_path = File.join(dir, "test.txt")
       File.write(new_file_path, "test!")
+      sleep(0.01)
 
-      interface.await
+      while queue.size == 0
+        interface.await(40)
+      end
 
       mod, add, del = queue.pop
 

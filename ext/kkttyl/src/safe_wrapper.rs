@@ -2,6 +2,7 @@ use notify::{RecommendedWatcher, Watcher, RecursiveMode, DebouncedEvent};
 use std::sync::mpsc::{channel, Receiver};
 use std::time::Duration;
 use std::path::PathBuf;
+use std::sync::mpsc;
 
 pub struct CWatch {
     pub watcher: RecommendedWatcher,
@@ -11,7 +12,7 @@ pub struct CWatch {
 pub fn safe_cwatch_new(debounce_duration: u64) -> Box<CWatch> {
     let (transmission, receiving) = channel();
     let watcher: RecommendedWatcher =
-        Watcher::new(transmission, Duration::from_secs(debounce_duration)).unwrap();
+        Watcher::new(transmission, Duration::from_millis(debounce_duration)).unwrap();
 
     let ws = CWatch {
         watcher: watcher,
@@ -29,10 +30,12 @@ pub fn safe_cwatch_add(cwatch: &mut CWatch, abspath: &str) {
 }
 
 pub fn safe_cwatch_await(cwatch: &mut CWatch,
+                         timeout_duration: u64,
                          success_callback: &Fn(PathBuf, PathBuf, PathBuf),
-                         failure_callback: &Fn(Option<PathBuf>),
+                         failure_callback: &Fn(),
+                         timeout_callback: &Fn(),
                          ended_callback: &Fn()) {
-    match cwatch.rx.recv() {
+    match cwatch.rx.recv_timeout(Duration::from_millis(timeout_duration)) {
         Ok(notify_event) => {
             match notify_event {
                 DebouncedEvent::Create(pathbuf) => {
@@ -47,13 +50,21 @@ pub fn safe_cwatch_await(cwatch: &mut CWatch,
                 DebouncedEvent::Rename(sourcepath, destpath) => {
                     success_callback(PathBuf::new(), destpath, sourcepath)
                 }
-                DebouncedEvent::Error(_, pathbuf) => {
-                    failure_callback(pathbuf)
+                _ => {
+                    failure_callback()
                 }
-                _ => {}
             };
         }
-        Err(_) => ended_callback()
+        Err(error) => {
+            match error {
+                mpsc::RecvTimeoutError::Timeout => {
+                    timeout_callback()
+                }
+                mpsc::RecvTimeoutError::Disconnected => {
+                    ended_callback()
+                }
+            }
+        }
     }
 }
 
@@ -85,16 +96,19 @@ mod tests {
             .expect("couldn't write to file");
         f.sync_all().expect("couldn't sync file");
 
-        let test_success_cb = Box::new(move |_m: PathBuf, _a: PathBuf, _r: PathBuf| {
+        let success_cb = Box::new(move |_m: PathBuf, _a: PathBuf, _r: PathBuf| {
         });
 
-        let test_failure_cb = Box::new(move |_: Option<PathBuf>| {
+        let failure_cb = Box::new(move || {
         });
 
-        let test_ended_cb = Box::new(move || {
+        let timeout_cb = Box::new(move || {
         });
 
-        safe_cwatch_await(&mut cwatch, &*test_success_cb, &*test_failure_cb, &*test_ended_cb);
+        let ended_cb = Box::new(move || {
+        });
+
+        safe_cwatch_await(&mut cwatch, 400, &*success_cb, &*failure_cb, &*timeout_cb, &*ended_cb);
 
         // cwatch.rx.recv().expect("didn't get file");
     }

@@ -1,12 +1,14 @@
 module Lmkplz
   class Interface
-    def initialize
+    def initialize(gather_event_duration_ms)
       @mutex = Mutex.new
       @add_queue = []
+      @gather_event_duration_ms = gather_event_duration_ms
 
       @mutex.synchronize do
         @on_success = -> (_m, _a, _r) {}
-        @on_failure = -> (_event, _path) {}
+        @on_failure = -> {}
+        @on_timeout = -> {}
         @on_end = -> {}
       end
     end
@@ -20,6 +22,12 @@ module Lmkplz
     def on_failure(&block)
       @mutex.synchronize do
         @on_failure = block
+      end
+    end
+
+    def on_timeout(&block)
+      @mutex.synchronize do
+        @on_timeout = block
       end
     end
 
@@ -43,14 +51,25 @@ module Lmkplz
       end
     end
 
-    def await
-      Middleman.cwatch_await(cwatch, @on_success, @on_failure, @on_end)
+    def await(wait_ms)
+      if !cwatch?
+        raise "Call #start before #await"
+      end
+
+      Middleman.cwatch_await(
+        cwatch,
+        wait_ms,
+        @on_success,
+        @on_failure,
+        @on_timeout,
+        @on_end
+      )
     end
 
     private
 
     def cwatch
-      @cwatch ||= Middleman.cwatch_new(1)
+      @cwatch ||= Middleman.cwatch_new(@gather_event_duration_ms)
     end
 
     def cwatch?

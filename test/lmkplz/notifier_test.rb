@@ -7,45 +7,40 @@ class NotifierTest < TestCase
 
     Dir.mktmpdir do |dir|
       Dir.chdir(dir) do
-        new_file_path = File.join(dir, "test.txt")
-        File.write(new_file_path, "\n")
-        logger.debug "wrote new file"
+        Timeout.timeout(5) do
+          File.write(File.join(dir, "ensure_file_and_folder_created.txt"), "\n")
+          sleep(0.01)
 
-        modified_files = Queue.new
-        callback = -> (path) { modified_files.push(path) }
+          events = Queue.new
 
-        waiter = Thread.new do
-          logger.debug "inside the waiter/killer"
-          modified_files.pop
-          logger.debug "popped modified file"
-          notifier.kill
-          logger.debug "killed notifier"
+          notifier =
+            Lmkplz::Notifier.new(dir) do |modified, created, deleted|
+              logger.info "pushed #{modified} #{created}, #{deleted}"
+              events.push([modified, created, deleted])
+            end
+
+          logger.info "notifier initialized"
+
+          notifier.start
+
+          new_file_path = File.join(dir, "test.txt")
+          File.write(new_file_path, "Hi\n")
+          File.write(new_file_path, "Bye\n")
+
+          logger.info "files written"
+
+          loop do
+            if events.size >= 2
+              break
+            end
+
+            Thread.pass
+          end
+
+          notifier.pause
+
+          puts events.inspect
         end
-
-        logger.debug "initializing notifier"
-
-        notifier = Lmkplz::Notifier.new(dir)
-        notifier.on_write(&callback)
-        notifier.on_create(&callback)
-        notifier.on_remove(&callback)
-
-        logger.debug "initialized notifier"
-
-        notifier.start
-
-        logger.debug "started notifier"
-
-        File.write(new_file_path, "test!\n")
-
-        logger.debug "updated file"
-
-        # notifier.callbacker.join
-        puts modified_files.size
-        puts modified_files.num_waiting
-        waiter.join
-        notifier.watcher_thread
-
-        puts 7
       end
     end
   end

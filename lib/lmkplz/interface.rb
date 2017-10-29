@@ -25,10 +25,22 @@ module Lmkplz
 
     def start
       cwatch
+
+      @mutex.synchronize do
+        while @add_queue.any?
+          add(@add_queue.pop)
+        end
+      end
     end
 
     def add(dir)
-      Middleman.cwatch_add(cwatch, dir)
+      if cwatch?
+        Middleman.cwatch_add(cwatch, dir)
+      else
+        @mutex.synchronize do
+          @add_queue.push(dir)
+        end
+      end
     end
 
     def await

@@ -2,13 +2,11 @@ module Lmkplz
   class Notifier
     attr_reader :callbacker
 
-    def initialize(*paths, &block)
-      @files = Queue.new
+    def initialize(wait_duration, *paths, &block)
+      @wait_duration = wait_duration
 
       paths.each { |path| interface.add(path) }
       interface.on_success(&block)
-
-      @logger = Logger.new($stdout)
     end
 
     def start
@@ -32,22 +30,13 @@ module Lmkplz
     def the_loop
       @the_loop ||= Thread.new do
         loop do
-          @logger.info "awaiting"
-          begin
-            Timeout.timeout(1) do
-              interface.await
-            end
-          rescue Timeout::Error
-            @logger.info "lol nvm"
-            Thread.pass
-          end
-          @logger.info "awaited"
+          interface.await(@wait_duration)
         end
       end
     end
 
     def interface
-      @interface ||= Interface.new
+      @interface ||= Interface.new(@wait_duration)
     end
   end
 end

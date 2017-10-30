@@ -18,7 +18,7 @@ module Lmkplz
     end
   end
 
-  module Middleman
+  module Metal
     extend FFI::Library
 
     ffi_lib Kkttyl.path

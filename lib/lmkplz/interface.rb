@@ -43,7 +43,7 @@ module Lmkplz
 
     def add(dir)
       if cwatch?
-        Middleman.cwatch_add(cwatch, dir)
+        Metal.cwatch_add(cwatch, dir)
       else
         @mutex.synchronize do
           @add_queue.push(dir)
@@ -56,7 +56,7 @@ module Lmkplz
         raise "Call #start before #await"
       end
 
-      Middleman.cwatch_await(
+      Metal.cwatch_await(
         cwatch,
         wait_ms,
         @on_success,
@@ -69,7 +69,7 @@ module Lmkplz
     private
 
     def cwatch
-      @cwatch ||= Middleman.cwatch_new(@gather_event_duration_ms)
+      @cwatch ||= Metal.cwatch_new(@gather_event_duration_ms)
     end
 
     def cwatch?

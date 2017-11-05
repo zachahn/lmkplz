@@ -29,6 +29,7 @@ module Lmkplz
     callback :end_callback, %i[], :void
 
     attach_function :kkttyl_new, %i[uint64], :pointer
+    attach_function :kkttyl_free, %i[pointer], :void
     attach_function :kkttyl_add, %i[pointer string], :void
     attach_function :kkttyl_await, \
       %i[

@@ -41,6 +41,15 @@ module Lmkplz
       end
     end
 
+    def free
+      if !kkttyl?
+        return
+      end
+
+      Metal.kkttyl_free(kkttyl)
+      @kkttyl = nil
+    end
+
     def add(dir)
       if kkttyl?
         Metal.kkttyl_add(kkttyl, dir)

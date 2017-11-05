@@ -55,6 +55,18 @@ pub extern "C" fn kkttyl_await(
     }
 }
 
+/// Free!
+#[no_mangle]
+pub extern "C" fn kkttyl_free(kkttyl: *mut KkttylStruct) {
+    if kkttyl.is_null() {
+        return;
+    }
+
+    unsafe {
+        Box::from_raw(kkttyl);
+    }
+}
+
 fn success_callback_wrapper(
     callback: extern "C" fn(*const c_char, *const c_char, *const c_char),
 ) -> Box<Fn(PathBuf, PathBuf, PathBuf)> {

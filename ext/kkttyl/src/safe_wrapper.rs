@@ -4,17 +4,17 @@ use std::time::Duration;
 use std::path::PathBuf;
 use std::sync::mpsc;
 
-pub struct CWatch {
+pub struct KkttylStruct {
     pub watcher: RecommendedWatcher,
     pub rx: Receiver<DebouncedEvent>,
 }
 
-pub fn safe_cwatch_new(debounce_duration: u64) -> Box<CWatch> {
+pub fn safe_kkttyl_new(debounce_duration: u64) -> Box<KkttylStruct> {
     let (transmission, receiving) = channel();
     let watcher: RecommendedWatcher =
         Watcher::new(transmission, Duration::from_millis(debounce_duration)).unwrap();
 
-    let ws = CWatch {
+    let ws = KkttylStruct {
         watcher: watcher,
         rx: receiving,
     };
@@ -22,22 +22,22 @@ pub fn safe_cwatch_new(debounce_duration: u64) -> Box<CWatch> {
     Box::new(ws)
 }
 
-pub fn safe_cwatch_add(cwatch: &mut CWatch, abspath: &str) {
-    cwatch
+pub fn safe_kkttyl_add(kkttyl: &mut KkttylStruct, abspath: &str) {
+    kkttyl
         .watcher
         .watch(abspath, RecursiveMode::Recursive)
         .unwrap();
 }
 
-pub fn safe_cwatch_await(
-    cwatch: &mut CWatch,
+pub fn safe_kkttyl_await(
+    kkttyl: &mut KkttylStruct,
     timeout_duration: u64,
     success_callback: &Fn(PathBuf, PathBuf, PathBuf),
     failure_callback: &Fn(),
     timeout_callback: &Fn(),
     ended_callback: &Fn(),
 ) {
-    match cwatch.rx.recv_timeout(
+    match kkttyl.rx.recv_timeout(
         Duration::from_millis(timeout_duration),
     ) {
         Ok(notify_event) => {
@@ -82,9 +82,9 @@ mod tests {
 
         sleep(Duration::from_millis(10));
 
-        let mut cwatch = safe_cwatch_new(1);
-        safe_cwatch_add(
-            &mut cwatch,
+        let mut kkttyl = safe_kkttyl_new(1);
+        safe_kkttyl_add(
+            &mut kkttyl,
             td.path().to_str().expect("can't get tempdir path"),
         );
 
@@ -105,8 +105,8 @@ mod tests {
 
         let ended_cb = Box::new(move || {});
 
-        safe_cwatch_await(
-            &mut cwatch,
+        safe_kkttyl_await(
+            &mut kkttyl,
             400,
             &*success_cb,
             &*failure_cb,
@@ -114,6 +114,6 @@ mod tests {
             &*ended_cb,
         );
 
-        // cwatch.rx.recv().expect("didn't get file");
+        // kkttyl.rx.recv().expect("didn't get file");
     }
 }

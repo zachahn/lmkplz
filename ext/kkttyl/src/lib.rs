@@ -8,30 +8,30 @@ mod string_util;
 use libc::c_char;
 use std::ffi::{CStr, CString};
 use std::path::PathBuf;
-use safe_wrapper::CWatch;
+use safe_wrapper::KkttylStruct;
 
 /// Create a new instance of the watcher
 #[no_mangle]
-pub extern "C" fn cwatch_new(debounce_duration: u64) -> *mut CWatch {
-    let boxed_cwatch = safe_wrapper::safe_cwatch_new(debounce_duration);
+pub extern "C" fn kkttyl_new(debounce_duration: u64) -> *mut KkttylStruct {
+    let boxed_kkttyl = safe_wrapper::safe_kkttyl_new(debounce_duration);
 
-    Box::into_raw(boxed_cwatch)
+    Box::into_raw(boxed_kkttyl)
 }
 
 /// Add a path to watch
 #[no_mangle]
-pub extern "C" fn cwatch_add(cwatch: *mut CWatch, abspath: *const c_char) {
+pub extern "C" fn kkttyl_add(kkttyl: *mut KkttylStruct, abspath: *const c_char) {
     unsafe {
         let unsafe_abspath = CStr::from_ptr(abspath);
 
-        safe_wrapper::safe_cwatch_add(&mut *cwatch, unsafe_abspath.to_str().unwrap());
+        safe_wrapper::safe_kkttyl_add(&mut *kkttyl, unsafe_abspath.to_str().unwrap());
     }
 }
 
 /// Be notified of a change
 #[no_mangle]
-pub extern "C" fn cwatch_await(
-    cwatch: *mut CWatch,
+pub extern "C" fn kkttyl_await(
+    kkttyl: *mut KkttylStruct,
     timeout_duration: u64,
     success: extern "C" fn(*const c_char, *const c_char, *const c_char),
     failure: extern "C" fn(),
@@ -44,8 +44,8 @@ pub extern "C" fn cwatch_await(
     let wrapped_ended_callback = callback_util::wrap_no_arg(ended);
 
     unsafe {
-        safe_wrapper::safe_cwatch_await(
-            &mut *cwatch,
+        safe_wrapper::safe_kkttyl_await(
+            &mut *kkttyl,
             timeout_duration,
             &*wrapped_success_callback,
             &*wrapped_failure_callback,
@@ -88,9 +88,9 @@ mod tests {
 
         sleep(Duration::from_millis(10));
 
-        let cwatch = cwatch_new(1);
+        let kkttyl = kkttyl_new(1);
         let path_to_watch = td.path().to_str().expect("can't get tempdir path");
-        cwatch_add(cwatch, CString::new(path_to_watch).unwrap().as_ptr());
+        kkttyl_add(kkttyl, CString::new(path_to_watch).unwrap().as_ptr());
 
         sleep(Duration::from_millis(100));
 
@@ -101,6 +101,6 @@ mod tests {
         );
         f.sync_all().expect("couldn't sync file");
 
-        unsafe { (*cwatch).rx.recv().expect("didn't get file") };
+        unsafe { (*kkttyl).rx.recv().expect("didn't get file") };
     }
 }

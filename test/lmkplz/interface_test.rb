@@ -8,7 +8,7 @@ class InterfaceTest < TestCase
       queue = Queue.new
       interface = Lmkplz::Interface.new(200)
       interface.add(dir)
-      interface.on_success { |m, a, r| queue.push([m, a, r]) }
+      interface.on_success { |m, c, r| queue.push([m, c, r]) }
 
       interface.start
 

@@ -6,7 +6,7 @@ module Lmkplz
       @gather_event_duration_ms = gather_event_duration_ms
 
       @mutex.synchronize do
-        @on_success = -> (_m, _a, _r) {}
+        @on_success = -> (_m, _c, _r) {}
         @on_failure = -> {}
         @on_timeout = -> {}
         @on_end = -> {}

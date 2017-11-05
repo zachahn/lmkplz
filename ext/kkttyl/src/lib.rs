@@ -21,11 +21,10 @@ pub extern "C" fn kkttyl_new(debounce_duration: u64) -> *mut KkttylStruct {
 /// Add a path to watch
 #[no_mangle]
 pub extern "C" fn kkttyl_add(kkttyl: *mut KkttylStruct, abspath: *const c_char) {
-    unsafe {
-        let unsafe_abspath = CStr::from_ptr(abspath);
+    let unsafe_abspath = unsafe { CStr::from_ptr(abspath) };
+    let actual = unsafe { &mut *kkttyl };
 
-        safe_wrapper::safe_kkttyl_add(&mut *kkttyl, unsafe_abspath.to_str().unwrap());
-    }
+    safe_wrapper::safe_kkttyl_add(actual, unsafe_abspath.to_str().unwrap());
 }
 
 /// Be notified of a change
@@ -38,21 +37,21 @@ pub extern "C" fn kkttyl_await(
     timeout: extern "C" fn(),
     ended: extern "C" fn(),
 ) {
+    let actual = unsafe { &mut *kkttyl };
+
     let wrapped_success_callback = success_callback_wrapper(success);
     let wrapped_failure_callback = callback_util::wrap_no_arg(failure);
     let wrapped_timeout_callback = callback_util::wrap_no_arg(timeout);
     let wrapped_ended_callback = callback_util::wrap_no_arg(ended);
 
-    unsafe {
-        safe_wrapper::safe_kkttyl_await(
-            &mut *kkttyl,
-            timeout_duration,
-            &*wrapped_success_callback,
-            &*wrapped_failure_callback,
-            &*wrapped_timeout_callback,
-            &*wrapped_ended_callback,
-        )
-    }
+    safe_wrapper::safe_kkttyl_await(
+        actual,
+        timeout_duration,
+        &*wrapped_success_callback,
+        &*wrapped_failure_callback,
+        &*wrapped_timeout_callback,
+        &*wrapped_ended_callback,
+    )
 }
 
 /// Free!

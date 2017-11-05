@@ -2,16 +2,18 @@ extern crate notify;
 extern crate libc;
 
 mod safe_wrapper;
+mod callback_util;
+mod string_util;
 
 use libc::c_char;
 use std::ffi::{CStr, CString};
 use std::path::PathBuf;
-use safe_wrapper::*;
+use safe_wrapper::{CWatch};
 
 /// Create a new instance of the watcher
 #[no_mangle]
 pub extern "C" fn cwatch_new(debounce_duration: u64) -> *mut CWatch {
-    let boxed_cwatch = safe_cwatch_new(debounce_duration);
+    let boxed_cwatch = safe_wrapper::safe_cwatch_new(debounce_duration);
 
     Box::into_raw(boxed_cwatch)
 }
@@ -22,7 +24,7 @@ pub extern "C" fn cwatch_add(cwatch: *mut CWatch, abspath: *const c_char) {
     unsafe {
         let unsafe_abspath = CStr::from_ptr(abspath);
 
-        safe_cwatch_add(&mut *cwatch, unsafe_abspath.to_str().unwrap());
+        safe_wrapper::safe_cwatch_add(&mut *cwatch, unsafe_abspath.to_str().unwrap());
     }
 }
 
@@ -35,45 +37,29 @@ pub extern "C" fn cwatch_await(cwatch: *mut CWatch,
                                timeout: extern "C" fn(),
                                ended: extern "C" fn()) {
     let wrapped_success_callback = success_callback_wrapper(success);
-    let wrapped_failure_callback = failure_callback_wrapper(failure);
-    let wrapped_timeout_callback = timeout_callback_wrapper(timeout);
-    let wrapped_ended_callback = ended_callback_wrapper(ended);
+    let wrapped_failure_callback = callback_util::wrap_no_arg(failure);
+    let wrapped_timeout_callback = callback_util::wrap_no_arg(timeout);
+    let wrapped_ended_callback = callback_util::wrap_no_arg(ended);
 
     unsafe {
-        safe_cwatch_await(&mut *cwatch,
-                          timeout_duration,
-                          &*wrapped_success_callback,
-                          &*wrapped_failure_callback,
-                          &*wrapped_timeout_callback,
-                          &*wrapped_ended_callback)
+        safe_wrapper::safe_cwatch_await(&mut *cwatch,
+                                        timeout_duration,
+                                        &*wrapped_success_callback,
+                                        &*wrapped_failure_callback,
+                                        &*wrapped_timeout_callback,
+                                        &*wrapped_ended_callback)
     }
 }
 
 fn success_callback_wrapper(callback: extern "C" fn(*const c_char, *const c_char, *const c_char))
                             -> Box<Fn(PathBuf, PathBuf, PathBuf)> {
-    Box::new(move |modified_pathbuf, added_pathbuf, removed_pathbuf| {
-        let modified_path = modified_pathbuf.to_str().unwrap();
-        let added_path = added_pathbuf.to_str().unwrap();
-        let removed_path = removed_pathbuf.to_str().unwrap();
+    Box::new(move |modified_pathbuf, created_cstring, removed_pathbuf| {
+        let modified_cstring = string_util::pathbuf_to_cstring(modified_pathbuf);
+        let created_cstring = string_util::pathbuf_to_cstring(created_cstring);
+        let removed_cstring = string_util::pathbuf_to_cstring(removed_pathbuf);
 
-        let modified_cstr = CString::new(modified_path).unwrap();
-        let added_cstr = CString::new(added_path).unwrap();
-        let removed_cstr = CString::new(removed_path).unwrap();
-
-        callback(modified_cstr.as_ptr(), added_cstr.as_ptr(), removed_cstr.as_ptr());
+        callback(modified_cstring.as_ptr(), created_cstring.as_ptr(), removed_cstring.as_ptr());
     })
-}
-
-fn failure_callback_wrapper(callback: extern "C" fn()) -> Box<Fn()> {
-    Box::new(move || callback())
-}
-
-fn timeout_callback_wrapper(callback: extern "C" fn()) -> Box<Fn()> {
-    Box::new(move || callback())
-}
-
-fn ended_callback_wrapper(callback: extern "C" fn()) -> Box<Fn()> {
-    Box::new(move || callback())
 }
 
 #[cfg(test)]

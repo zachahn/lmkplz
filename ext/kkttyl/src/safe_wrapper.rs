@@ -29,13 +29,17 @@ pub fn safe_cwatch_add(cwatch: &mut CWatch, abspath: &str) {
         .unwrap();
 }
 
-pub fn safe_cwatch_await(cwatch: &mut CWatch,
-                         timeout_duration: u64,
-                         success_callback: &Fn(PathBuf, PathBuf, PathBuf),
-                         failure_callback: &Fn(),
-                         timeout_callback: &Fn(),
-                         ended_callback: &Fn()) {
-    match cwatch.rx.recv_timeout(Duration::from_millis(timeout_duration)) {
+pub fn safe_cwatch_await(
+    cwatch: &mut CWatch,
+    timeout_duration: u64,
+    success_callback: &Fn(PathBuf, PathBuf, PathBuf),
+    failure_callback: &Fn(),
+    timeout_callback: &Fn(),
+    ended_callback: &Fn(),
+) {
+    match cwatch.rx.recv_timeout(
+        Duration::from_millis(timeout_duration),
+    ) {
         Ok(notify_event) => {
             match notify_event {
                 DebouncedEvent::Create(pathbuf) => {
@@ -50,19 +54,13 @@ pub fn safe_cwatch_await(cwatch: &mut CWatch,
                 DebouncedEvent::Rename(sourcepath, destpath) => {
                     success_callback(PathBuf::new(), destpath, sourcepath)
                 }
-                _ => {
-                    failure_callback()
-                }
+                _ => failure_callback(),
             };
         }
         Err(error) => {
             match error {
-                mpsc::RecvTimeoutError::Timeout => {
-                    timeout_callback()
-                }
-                mpsc::RecvTimeoutError::Disconnected => {
-                    ended_callback()
-                }
+                mpsc::RecvTimeoutError::Timeout => timeout_callback(),
+                mpsc::RecvTimeoutError::Disconnected => ended_callback(),
             }
         }
     }
@@ -85,30 +83,36 @@ mod tests {
         sleep(Duration::from_millis(10));
 
         let mut cwatch = safe_cwatch_new(1);
-        safe_cwatch_add(&mut cwatch,
-                        td.path().to_str().expect("can't get tempdir path"));
+        safe_cwatch_add(
+            &mut cwatch,
+            td.path().to_str().expect("can't get tempdir path"),
+        );
 
         sleep(Duration::from_millis(100));
 
         let file_path = td.path().join("testing.txt");
         let mut f = File::create(file_path).expect("couldn't create file");
-        f.write_all(b"Hello, world!")
-            .expect("couldn't write to file");
+        f.write_all(b"Hello, world!").expect(
+            "couldn't write to file",
+        );
         f.sync_all().expect("couldn't sync file");
 
-        let success_cb = Box::new(move |_m: PathBuf, _a: PathBuf, _r: PathBuf| {
-        });
+        let success_cb = Box::new(move |_m: PathBuf, _a: PathBuf, _r: PathBuf| {});
 
-        let failure_cb = Box::new(move || {
-        });
+        let failure_cb = Box::new(move || {});
 
-        let timeout_cb = Box::new(move || {
-        });
+        let timeout_cb = Box::new(move || {});
 
-        let ended_cb = Box::new(move || {
-        });
+        let ended_cb = Box::new(move || {});
 
-        safe_cwatch_await(&mut cwatch, 400, &*success_cb, &*failure_cb, &*timeout_cb, &*ended_cb);
+        safe_cwatch_await(
+            &mut cwatch,
+            400,
+            &*success_cb,
+            &*failure_cb,
+            &*timeout_cb,
+            &*ended_cb,
+        );
 
         // cwatch.rx.recv().expect("didn't get file");
     }

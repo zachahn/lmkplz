@@ -25,6 +25,8 @@ class InterfaceTest < TestCase
       assert_equal("", mod)
       assert_match(new_file_path, add)
       assert_equal("", del)
+
+      interface.free
     end
   end
 end

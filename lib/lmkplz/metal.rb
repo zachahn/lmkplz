@@ -28,9 +28,9 @@ module Lmkplz
     callback :timeout_callback, %i[], :void
     callback :end_callback, %i[], :void
 
-    attach_function :cwatch_new, %i[uint64], :pointer
-    attach_function :cwatch_add, %i[pointer string], :void
-    attach_function :cwatch_await, \
+    attach_function :kkttyl_new, %i[uint64], :pointer
+    attach_function :kkttyl_add, %i[pointer string], :void
+    attach_function :kkttyl_await, \
       %i[
         pointer
         uint64

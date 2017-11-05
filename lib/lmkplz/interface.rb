@@ -32,7 +32,7 @@ module Lmkplz
     end
 
     def start
-      cwatch
+      kkttyl
 
       @mutex.synchronize do
         while @add_queue.any?
@@ -42,8 +42,8 @@ module Lmkplz
     end
 
     def add(dir)
-      if cwatch?
-        Metal.cwatch_add(cwatch, dir)
+      if kkttyl?
+        Metal.kkttyl_add(kkttyl, dir)
       else
         @mutex.synchronize do
           @add_queue.push(dir)
@@ -52,12 +52,12 @@ module Lmkplz
     end
 
     def await(wait_ms)
-      if !cwatch?
+      if !kkttyl?
         raise "Call #start before #await"
       end
 
-      Metal.cwatch_await(
-        cwatch,
+      Metal.kkttyl_await(
+        kkttyl,
         wait_ms,
         @on_success,
         @on_failure,
@@ -68,12 +68,12 @@ module Lmkplz
 
     private
 
-    def cwatch
-      @cwatch ||= Metal.cwatch_new(@gather_event_duration_ms)
+    def kkttyl
+      @kkttyl ||= Metal.kkttyl_new(@gather_event_duration_ms)
     end
 
-    def cwatch?
-      !!@cwatch
+    def kkttyl?
+      !!@kkttyl
     end
   end
 end

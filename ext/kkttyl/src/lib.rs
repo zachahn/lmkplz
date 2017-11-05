@@ -6,7 +6,7 @@ mod callback_util;
 mod string_util;
 
 use libc::c_char;
-use std::ffi::{CStr, CString};
+use std::ffi::CStr;
 use std::path::PathBuf;
 use safe_wrapper::KkttylStruct;
 
@@ -92,6 +92,7 @@ mod tests {
     use std::fs::File;
     use std::time::Duration;
     use std::io::prelude::*;
+    use std::ffi::CString;
 
     #[test]
     fn unsafe_works() {

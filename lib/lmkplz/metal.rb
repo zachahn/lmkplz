@@ -1,5 +1,5 @@
 module Lmkplz
-  module Kkttyl
+  module External
     def self.path
       if $USE_DEBUG
         $stderr.puts "Using debug build"
@@ -21,7 +21,7 @@ module Lmkplz
   module Metal
     extend FFI::Library
 
-    ffi_lib Kkttyl.path
+    ffi_lib External.path
 
     callback :success_callback, %i[string string string], :void
     callback :failure_callback, %i[], :void

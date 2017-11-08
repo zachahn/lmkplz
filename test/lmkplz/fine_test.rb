@@ -1,6 +1,6 @@
 require "test_helper"
 
-class NotifierTest < TestCase
+class FineTest < TestCase
   def test_it_works
     Thread.abort_on_exception = true
 
@@ -12,7 +12,7 @@ class NotifierTest < TestCase
         events = Queue.new
 
         notifier =
-          Lmkplz::Notifier.new(200, dir) do |modified, created, deleted|
+          Lmkplz::Fine.new(200, dir) do |modified, created, deleted|
             events.push([modified, created, deleted])
           end
 

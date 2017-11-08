@@ -4,5 +4,5 @@ require "logger"
 
 require "lmkplz/interface"
 require "lmkplz/metal"
-require "lmkplz/notifier"
+require "lmkplz/fine"
 require "lmkplz/version"

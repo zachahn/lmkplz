@@ -1,5 +1,5 @@
 module Lmkplz
-  class Notifier
+  class Fine
     attr_reader :callbacker
 
     def initialize(wait_duration, *paths, &block)

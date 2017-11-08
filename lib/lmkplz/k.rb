@@ -1,5 +1,5 @@
 module Lmkplz
-  class Interface
+  class K
     def initialize(gather_event_duration_ms)
       @mutex = Mutex.new
       @add_queue = []

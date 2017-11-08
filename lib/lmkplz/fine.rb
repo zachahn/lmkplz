@@ -36,7 +36,7 @@ module Lmkplz
     end
 
     def interface
-      @interface ||= Interface.new(@wait_duration)
+      @interface ||= K.new(@wait_duration)
     end
   end
 end

@@ -1,12 +1,12 @@
 require "test_helper"
 
-class InterfaceTest < TestCase
+class KTest < TestCase
   def test_kkttyl_ruby_interface
     Dir.mktmpdir do |dir|
       File.write(File.join(dir, "ensure_file_and_folder_created.txt"), "\n")
       sleep(0.01)
       queue = Queue.new
-      interface = Lmkplz::Interface.new(200)
+      interface = Lmkplz::K.new(200)
       interface.add(dir)
       interface.on_success { |m, c, r| queue.push([m, c, r]) }
 

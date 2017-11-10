@@ -42,7 +42,7 @@ module Lmkplz
     end
 
     def free
-      if !kkttyl?
+      if !active?
         return
       end
 
@@ -51,7 +51,7 @@ module Lmkplz
     end
 
     def add(dir)
-      if kkttyl?
+      if active?
         Metal.kkttyl_add(kkttyl, dir)
       else
         @mutex.synchronize do
@@ -61,7 +61,7 @@ module Lmkplz
     end
 
     def await(wait_ms)
-      if !kkttyl?
+      if !active?
         raise "Call #start before #await"
       end
 
@@ -75,14 +75,14 @@ module Lmkplz
       )
     end
 
+    def active?
+      !!@kkttyl
+    end
+
     private
 
     def kkttyl
       @kkttyl ||= Metal.kkttyl_new(@gather_event_duration_ms)
-    end
-
-    def kkttyl?
-      !!@kkttyl
     end
   end
 end

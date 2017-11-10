@@ -1,9 +1,9 @@
 module Lmkplz
   class K
-    def initialize(gather_event_duration_ms)
+    def initialize
       @mutex = Mutex.new
       @add_queue = []
-      @gather_event_duration_ms = gather_event_duration_ms
+      @gather_event_duration_ms = 200
 
       @mutex.synchronize do
         @on_success = -> (_m, _c, _r) {}
@@ -60,14 +60,14 @@ module Lmkplz
       end
     end
 
-    def await(wait_ms)
+    def await
       if !active?
         raise "Call #start before #await"
       end
 
       Metal.kkttyl_await(
         kkttyl,
-        wait_ms,
+        40,
         @on_success,
         @on_failure,
         @on_timeout,

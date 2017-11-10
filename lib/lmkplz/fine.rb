@@ -2,9 +2,7 @@ module Lmkplz
   class Fine
     attr_reader :callbacker
 
-    def initialize(wait_duration, *paths, &block)
-      @wait_duration = wait_duration
-
+    def initialize(*paths, &block)
       paths.each { |path| interface.add(path) }
       interface.on_success(&block)
     end
@@ -30,13 +28,13 @@ module Lmkplz
     def the_loop
       @the_loop ||= Thread.new do
         loop do
-          interface.await(@wait_duration)
+          interface.await
         end
       end
     end
 
     def interface
-      @interface ||= K.new(@wait_duration)
+      @interface ||= K.new
     end
   end
 end

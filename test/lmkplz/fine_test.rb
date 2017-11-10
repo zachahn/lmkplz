@@ -12,7 +12,7 @@ class FineTest < TestCase
         events = Queue.new
 
         notifier =
-          Lmkplz::Fine.new(200, dir) do |modified, created, deleted|
+          Lmkplz::Fine.new(dir) do |modified, created, deleted|
             events.push([modified, created, deleted])
           end
 

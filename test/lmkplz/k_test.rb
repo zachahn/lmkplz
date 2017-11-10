@@ -6,7 +6,7 @@ class KTest < TestCase
       File.write(File.join(dir, "ensure_file_and_folder_created.txt"), "\n")
       sleep(0.01)
       queue = Queue.new
-      interface = Lmkplz::K.new(200)
+      interface = Lmkplz::K.new
       interface.add(dir)
       interface.on_success { |m, c, r| queue.push([m, c, r]) }
 
@@ -17,7 +17,7 @@ class KTest < TestCase
       sleep(0.01)
 
       while queue.size == 0
-        interface.await(40)
+        interface.await
       end
 
       mod, add, del = queue.pop

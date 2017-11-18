@@ -2,9 +2,16 @@ module Lmkplz
   class Fine
     attr_reader :callbacker
 
-    def initialize(*paths, &block)
+    def initialize(*paths, only: nil, except: nil, &block)
+      @block = block
+      @file_filter = FileFilter.new(only: only, except: except)
       paths.each { |path| interface.add(path) }
-      interface.on_success(&block)
+
+      interface.on_success do |m, c, r|
+        @file_filter.call(m, c, r) do |mm, cc, rr|
+          @block.call(mm, cc, rr)
+        end
+      end
     end
 
     def start

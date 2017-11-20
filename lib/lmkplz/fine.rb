@@ -41,7 +41,7 @@ module Lmkplz
     end
 
     def interface
-      @interface ||= K.new
+      @interface ||= Once.new
     end
   end
 end

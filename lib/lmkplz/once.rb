@@ -1,5 +1,5 @@
 module Lmkplz
-  class K
+  class Once
     def initialize
       @mutex = Mutex.new
       @add_queue = []

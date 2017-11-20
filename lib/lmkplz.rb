@@ -2,7 +2,7 @@ require "ffi"
 require "thread"
 require "logger"
 
-require "lmkplz/k"
+require "lmkplz/once"
 require "lmkplz/metal"
 require "lmkplz/fine"
 require "lmkplz/file_filter"

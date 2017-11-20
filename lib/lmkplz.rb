@@ -2,8 +2,11 @@ require "ffi"
 require "thread"
 require "logger"
 
-require "lmkplz/once"
-require "lmkplz/metal"
-require "lmkplz/repeatedly"
-require "lmkplz/file_filter"
+# Private
 require "lmkplz/version"
+require "lmkplz/metal"
+require "lmkplz/file_filter"
+
+# Public
+require "lmkplz/once"
+require "lmkplz/repeatedly"

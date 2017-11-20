@@ -1,5 +1,5 @@
 module Lmkplz
-  class Fine
+  class Repeatedly
     attr_reader :callbacker
 
     def initialize(*paths, only: nil, except: nil, &block)

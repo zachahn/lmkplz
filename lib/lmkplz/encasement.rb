@@ -1,5 +1,5 @@
 module Lmkplz
-  class Once
+  class Encasement
     def initialize
       @mutex = Mutex.new
       @add_queue = []

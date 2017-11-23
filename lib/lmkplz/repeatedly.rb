@@ -41,7 +41,7 @@ module Lmkplz
     end
 
     def interface
-      @interface ||= Once.new
+      @interface ||= Encasement.new
     end
   end
 end

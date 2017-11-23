@@ -1,6 +1,6 @@
 [package]
 name = "kkttyl"
-version = "0.0.1"
+version = "0.0.2"
 authors = ["Zach Ahn <engineering@zachahn.com>"]
 
 [lib]

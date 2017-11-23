@@ -28,3 +28,5 @@ version_files.each do |file|
 
   File.write(file.path, updated_contents.join(""))
 end
+
+system("bundle exec rake kkttyl:release")

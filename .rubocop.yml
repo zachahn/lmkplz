@@ -1,59 +1,18 @@
+inherit_gem:
+  the_bath_of_zahn: config/rubocop.yml
+
 AllCops:
   DisplayCopNames: true
 
-Bundler/OrderedGems:
+Style/WhileUntilModifier:
   Enabled: false
 
-Metrics/AbcSize:
+Style/DoubleNegation:
+  Enabled: false
+
+Metrics/BlockLength:
   Exclude:
-    - test/**/*
+    - "**/*.gemspec"
 
-Metrics/LineLength:
-  IgnoredPatterns:
-    - !ruby/regexp /^\s*#/
-
-Metrics/MethodLength:
-  Exclude:
-    - test/**/*
-
-Style/AlignParameters:
-  EnforcedStyle: with_fixed_indentation
-
-Style/AsciiComments:
+Style/GlobalVars:
   Enabled: false
-
-Style/Documentation:
-  Enabled: false
-
-Style/EmptyMethod:
-  Enabled: false
-
-Style/ExtraSpacing:
-  AllowForAlignment: false
-
-Style/FrozenStringLiteralComment:
-  Enabled: false
-
-Style/GuardClause:
-  Enabled: false
-
-Style/IfUnlessModifier:
-  Enabled: false
-
-Style/MultilineMethodCallIndentation:
-  EnforcedStyle: indented_relative_to_receiver
-
-Style/NegatedIf:
-  Enabled: false
-
-Style/SpaceInLambdaLiteral:
-  EnforcedStyle: require_space
-
-Style/StringLiterals:
-  EnforcedStyle: double_quotes
-
-Style/StringLiteralsInInterpolation:
-  Enabled: false
-
-Style/TrailingCommaInLiteral:
-  EnforcedStyleForMultiline: comma

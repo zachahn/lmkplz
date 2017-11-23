@@ -1,42 +1,30 @@
 module Lmkplz
   class Encasement
     def initialize
-      @mutex = Mutex.new
-      @add_queue = []
+      @callback_mutex = Mutex.new
+      @add_paths_mutex = Mutex.new
+      @add_paths_queue = []
       @gather_event_duration_ms = 200
+      @callbacks = Hash.new { -> {} }
+    end
 
-      @mutex.synchronize do
-        @on_success = -> (_m, _c, _r) {}
-        @on_failure = -> {}
-        @on_timeout = -> {}
-        @on_end = -> {}
+    def self.define_settable_callback(name)
+      define_method("on_#{name}") do |&block|
+        @callback_mutex.synchronize { @callbacks[name] = block }
       end
     end
 
-    def on_success(&block)
-      @mutex.synchronize do
-        @on_success = block
-      end
-    end
+    define_settable_callback :success
+    define_settable_callback :failure
+    define_settable_callback :timeout
+    define_settable_callback :end
 
-    def on_failure(&block)
-      @mutex.synchronize do
-        @on_failure = block
-      end
-    end
-
-    def on_timeout(&block)
-      @mutex.synchronize do
-        @on_timeout = block
-      end
-    end
-
-    def start
+    def malloc
       kkttyl
 
-      @mutex.synchronize do
-        while @add_queue.any?
-          add(@add_queue.pop)
+      @add_paths_mutex.synchronize do
+        while @add_paths_queue.any?
+          add(@add_paths_queue.pop)
         end
       end
     end
@@ -54,25 +42,23 @@ module Lmkplz
       if active?
         Metal.kkttyl_add(kkttyl, dir)
       else
-        @mutex.synchronize do
-          @add_queue.push(dir)
+        @add_paths_mutex.synchronize do
+          @add_paths_queue.push(dir)
         end
       end
     end
 
     def await
       if !active?
-        raise "Call #start before #await"
+        raise "Call #malloc before #await"
       end
 
-      Metal.kkttyl_await(
-        kkttyl,
-        40,
-        @on_success,
-        @on_failure,
-        @on_timeout,
-        @on_end
-      )
+      callbacks =
+        @callback_mutex.synchronize do
+          @callbacks.values_at(:success, :failure, :timeout, :end)
+        end
+
+      Metal.kkttyl_await(kkttyl, 40, *callbacks)
     end
 
     def active?

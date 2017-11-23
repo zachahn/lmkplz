@@ -10,7 +10,7 @@ class EncasementTest < TestCase
       interface.add(dir)
       interface.on_success { |m, c, r| queue.push([m, c, r]) }
 
-      interface.start
+      interface.malloc
 
       new_file_path = File.join(dir, "test.txt")
       File.write(new_file_path, "test!")

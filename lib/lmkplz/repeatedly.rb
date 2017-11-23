@@ -15,7 +15,7 @@ module Lmkplz
     end
 
     def start
-      interface.start
+      interface.malloc
       the_loop
 
       nil

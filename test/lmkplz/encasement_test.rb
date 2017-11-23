@@ -16,7 +16,7 @@ class EncasementTest < TestCase
       File.write(new_file_path, "test!")
       sleep(0.01)
 
-      while queue.size == 0
+      while queue.size.zero?
         interface.await
       end
 

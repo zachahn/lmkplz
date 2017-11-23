@@ -13,7 +13,14 @@ namespace :kkttyl do
       `cargo build`
     end
   end
+
+  task :release do
+    Dir.chdir("ext/kkttyl") do
+      `cargo build --release`
+    end
+  end
 end
 
 task test: "kkttyl:build"
+task build: "kkttyl:release"
 task default: :test

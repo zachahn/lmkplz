@@ -21,9 +21,14 @@ Gem::Specification.new do |spec|
       "public gem pushes."
   end
 
-  spec.files = `git ls-files -z`.split("\x0").reject do |f|
-    f.match(%r{^(test|spec|features)/})
-  end
+  spec.files =
+    `git ls-files -z`
+      .split("\x0")
+      .+(Dir.glob("ext/kkttyl/target/release/libkkttyl.*"))
+      .reject { |f| f.match(%r{^(bin|test|spec|features|ext)/}) }
+      .reject { |f| f == "Rakefile" }
+      .reject { |f| f.match(/^\./) }
+      .reject { |f| f.match(%r{\Aext/kkttyl/.*\.d\z}) }
   spec.bindir = "exe"
   spec.executables = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]

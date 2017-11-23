@@ -1,0 +1,30 @@
+#!/usr/bin/env ruby
+
+if ARGV.size != 1
+  puts "usage: #{File.basename(__FILE__)} <version>"
+end
+
+version = ARGV.first
+
+VersionFile = Struct.new(:path, :search)
+
+version_files = [
+  VersionFile.new("ext/kkttyl/Cargo.toml", /^(version = ")[^"]+(")$/),
+  VersionFile.new("lib/lmkplz/version.rb", /^(  VERSION = ")[^"]+("\.freeze)$/),
+]
+
+version_files.each do |file|
+  contents = File.readlines(file.path)
+  updated_contents =
+    contents.map do |line|
+      match = file.search.match(line)
+
+      if match
+        match[1] + version + match[2] + "\n"
+      else
+        line
+      end
+    end
+
+  File.write(file.path, updated_contents.join(""))
+end

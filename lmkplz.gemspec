@@ -16,9 +16,9 @@ Gem::Specification.new do |spec|
     `git ls-files -z`
       .split("\x0")
       .+(Dir.glob("ext/kkttyl/target/release/libkkttyl.*"))
-      .reject { |f| f.match(%r{^(bin|test|spec|features|ext)/}) }
+      .reject { |f| f.match(%r{^(bin|test|spec|features)/}) }
       .reject { |f| f == "Rakefile" }
-      .reject { |f| f.match(/^\./) }
+      .reject { |f| File.basename(f)[0] == "." }
       .reject { |f| f.match(%r{\Aext/kkttyl/.*\.d\z}) }
   spec.bindir = "exe"
   spec.executables = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }

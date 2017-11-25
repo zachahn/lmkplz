@@ -2,7 +2,7 @@ module Lmkplz
   module External
     def self.path
       path =
-        if $USE_DEBUG_KKTTYL
+        if defined?($USE_DEBUG_KKTTYL) && $USE_DEBUG_KKTTYL
           warn "Using debug build"
           debug_path
         else

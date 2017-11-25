@@ -1,12 +1,15 @@
 module Lmkplz
   module External
     def self.path
-      if $USE_DEBUG_KKTTYL
-        warn "Using debug build"
-        debug_path
-      else
-        release_path
-      end
+      path =
+        if $USE_DEBUG_KKTTYL
+          warn "Using debug build"
+          debug_path
+        else
+          release_path
+        end
+
+      File.expand_path(path, File.join(__dir__, "../.."))
     end
 
     def self.release_path

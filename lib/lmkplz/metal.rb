@@ -3,7 +3,7 @@ module Lmkplz
     def self.path
       path =
         if defined?($USE_DEBUG_KKTTYL) && $USE_DEBUG_KKTTYL
-          warn "Using debug build"
+          warn "🐝  Using debug build of kkttyl"
           debug_path
         else
           release_path
